@@ -1,4 +1,4 @@
-# Backcup
+# BackCup
 
 Backup and restore with deployable website for management
 
