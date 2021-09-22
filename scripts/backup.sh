@@ -34,11 +34,18 @@ done
 
 FULL_BACKUP_DIR="${BACKUP_DIR}-${SUFFIX}"
 
-FILES=$(rsync -avb --backup-dir="${FULL_BACKUP_DIR}" "${SOURCE}" "${DEST}" \
+FILES=$(rsync -avb --no-perms --no-owner --no-group --backup-dir="${FULL_BACKUP_DIR}" "${SOURCE}" "${DEST}" \
     2>&1 | tee -a "${BACKUP_LOG_FILE_NAME}" \
     | sed -n '/sending incremental file list/,$p' \
     | sed '1d' \
     | head -n -3)
+
+if [ $? -eq 0 ]; then
+  echo "Rsync success"
+else
+  echo "Rsync fail"
+  exit
+fi
 
 echo "FILES: $FILES"
 
@@ -46,8 +53,15 @@ FILES_JSON=$(get_json_array "$FILES")
 
 echo "Files copied: $FILES_JSON"
 
+printf '{
+  "User":"%s",
+  "Name":"%s",
+  "DateTime":"%s",
+  "Files":%s
+}' "${USERNAME}" "${BACKUP_NAME}" "${DATETIME}" "${FILES_JSON}" > "backup-temp.json"
+
 # TODO: Get username and pwd from arguments? Prompt for password?
-USERNAME=test-user
+USERNAME="$USER"
 DATETIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 BACKUP_NAME="${FULL_BACKUP_DIR}"
 
@@ -55,12 +69,7 @@ BACKUP_NAME="${FULL_BACKUP_DIR}"
 RESULT=$(curl --header "Content-Type: application/json" \
   --insecure \
   --request POST \
-  --data "{ \
-      \"User\":\"${USERNAME}\", \
-      \"Name\":\"${BACKUP_NAME}\", \
-      \"DateTime\":\"${DATETIME}\", \
-      \"Files\":${FILES_JSON} \
-    }" \
+  --data @backup-temp.json \
   "${API_URL}")
 
 echo "$RESULT"

@@ -1,1 +1,3 @@
 backup-log*
+backup-temp.json
+run-backup*
