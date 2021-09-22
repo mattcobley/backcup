@@ -34,7 +34,7 @@ done
 
 FULL_BACKUP_DIR="${BACKUP_DIR}-${SUFFIX}"
 
-FILES=$(rsync -avb --no-perms --no-owner --no-group --backup-dir="${FULL_BACKUP_DIR}" "${SOURCE}" "${DEST}" \
+FILES=$(rsync -rtDvb --backup-dir="${FULL_BACKUP_DIR}" "${SOURCE}" "${DEST}" \
     2>&1 | tee -a "${BACKUP_LOG_FILE_NAME}" \
     | sed -n '/sending incremental file list/,$p' \
     | sed '1d' \
