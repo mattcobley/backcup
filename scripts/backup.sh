@@ -47,11 +47,18 @@ else
   exit
 fi
 
-echo "FILES: $FILES"
+# Remove entries where the output for a specific file is an rsync message such as "permission denied"
+FILTERED=$(echo "$FILES" | grep -v "rsync")
+echo "FILES WITH FILTER: $FILTERED"
 
-FILES_JSON=$(get_json_array "$FILES")
+FILES_JSON=$(get_json_array "$FILTERED")
 
 echo "Files copied: $FILES_JSON"
+
+# TODO: Get username and pwd from arguments? Prompt for password?
+USERNAME="$USER"
+DATETIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+BACKUP_NAME="${FULL_BACKUP_DIR}"
 
 printf '{
   "User":"%s",
@@ -59,11 +66,6 @@ printf '{
   "DateTime":"%s",
   "Files":%s
 }' "${USERNAME}" "${BACKUP_NAME}" "${DATETIME}" "${FILES_JSON}" > "backup-temp.json"
-
-# TODO: Get username and pwd from arguments? Prompt for password?
-USERNAME="$USER"
-DATETIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-BACKUP_NAME="${FULL_BACKUP_DIR}"
 
 # TODO: Remove --insecure
 RESULT=$(curl --header "Content-Type: application/json" \
