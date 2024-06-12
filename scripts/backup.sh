@@ -43,8 +43,8 @@ done
 FULL_BACKUP_DIR="${BACKUP_DIR}-${SUFFIX}"
 
 # Create directories if they don't exist
-mkdir -p "${FULL_BACKUP_DIR}"
-mkdir -p "${DEST}"
+mkdir -m 777 -p "${FULL_BACKUP_DIR}"
+mkdir -m 777 -p "${DEST}"
 
 # Run the backup
 FILES=$(rsync -rtDvb --backup-dir="${FULL_BACKUP_DIR}" "${SOURCE}" "${DEST}" \
